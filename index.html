@@ -381,6 +381,7 @@
                         }
                         else if (this.readyState == 4)
                         {
+				alert("Received for button " + btnId + " Readystate: " + this.readyState + " Status: " + this.status)
 				sleep(15000).then(() => {
                             		getDocking(url,displayDocking,btn.id);
 				})
