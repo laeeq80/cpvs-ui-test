@@ -76,17 +76,17 @@
          The models were created using our modelling strategy given in paper <b>"Efficient iterative Virtual Screening with 
          Apache Spark and Conformal Prediction"</b> accepted in Journal of Cheminformatics.
         
-         <p>Once the profiles are ready, each compund can be docked against a particular receptor by entering pdb code of available receptor and pressing the dock button. Score will
+         <p>Once the profiles are ready, each compund can be docked against a particular receptor by entering pdb code of available receptor and pressing the <b>Run QVina</b> button. Score will
                 appear against each compound. 
              
          <p>   
                 <b>IMPORTANT NOTE:</b><br> 
-             AutoDock Vina has been used for docking. A ligand with low score generally means a higher affinity. Similarly, prediction of low-score or green means higher affinity and vise versa.  </p>
+             Quick Vina 2.0 has been used for docking. A ligand with low score generally means a higher affinity. Similarly, prediction of low-score or green means higher affinity and vise versa.  </p>
 
         <p>    
-        <b>Predicting Target Profiles as a Service with Confidence</b><br>
+        <b>Predicting Target Profiles with Confidence as aService using Docking Scores</b><br>
         Laeeq Ahmed, Hiba Alogheli, Staffan Arvidsson, Arvid Berg, Jonathan Alvarsson, Wesley Schaal, Erwin Laure and Ola Spjuth
-        [<i>In Progress</i>]<br>
+        [<i>In Review Process</i>]<br>
     </div>
    
     <div style="width: 48%; float:right; padding: 4px; font-family: sans-serif; font-size: large;">
@@ -163,7 +163,7 @@
     </div>
    
     <script>
-        var numOfReceptors = 2;
+        var numOfReceptors = 7;
         var tableCreated = false;
         var counter = 0;
         var NoOfRows = 0;
@@ -220,6 +220,7 @@
             {
                 if (this.readyState == 4 && this.status == 200) 
                 {
+                    //Calling the callback function drawAndFillGrid once got response from server
                     cFunction(this,receptor);
                 }else if(this.readyState == 4 && this.status == 400) 
                     {
@@ -311,8 +312,8 @@
                         row = document.getElementById('myTable').rows[r];
                         var noOfCells =document.getElementById("myTable").rows[r].cells.length;
                         row.insertCell(noOfCells).innerHTML = '<select size="1" class="receptorList" id="txt' + r + '" name="PdbCode"></select>';
-                        row.insertCell(noOfCells+1).innerHTML = '<button type="button" id="' + r + '" onclick=dock(this)>Run AutoDock</button>';
-            	    		
+                        row.insertCell(noOfCells+1).innerHTML = '<button type="button" id="' + r + '" onclick=dock(this)>Run QVina</button>';
+                        
             	    	//Filling the select box
             	    	var sel = document.getElementById('txt' + r);
 						for(var i = 0; i < numOfReceptors; i++) 
@@ -339,6 +340,11 @@
 
             function dock(btn){
                 
+                //Removing info if existed
+                document.getElementById("warning").innerHTML = "";
+                document.getElementById('warning').style.display = "none";
+                document.getElementById("warning").style.color = "red";
+                
                 if(receptorArray.indexOf(document.getElementById("txt" + btn.id).value.toUpperCase()) + 1 != 0)
                 {
                     url = "http://receptor"+(receptorArray.indexOf(document.getElementById("txt" + btn.id).value.toUpperCase()) + 1)+"-dpass.apps.osdev.pharmb.io/dockings/" + encodeURIComponent(document.getElementById('myTable').rows[btn.id].cells[0].innerHTML);
@@ -363,13 +369,22 @@
                 var response;
                 xmlhttp.onreadystatechange = function() 
                 {
+                    
                     if (this.readyState == 4 && this.status == 200) 
                     {
+                        //Calling the callback function displayDocking once got response from server
                         callBackFunction(this,btnId);
                     }else if(this.readyState == 4 && this.status == 400) 
                         {
                             document.getElementById('warning').style.display = "block";
                             document.getElementById("warning").innerHTML =  this.responseText;
+                        }
+                        else if (this.readyState == 4)
+                        {
+                            document.getElementById("warning").style.color = "Blue";
+                            document.getElementById("warning").innerHTML = "Info: Some jobs are running: try again after a while by pressing Run Qvina button";
+                            document.getElementById('warning').style.display = "block";
+                            document.getElementById(btnId).disabled = false;
                         }
                 };
 
